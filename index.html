@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Website</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="site-title-bar">
+      <span class="site-title">Loans Visualized</span>
+      <span class="title-separator">|</span>
+      <span class="site-subtitle">Repository of your Loans</span>
+    </div>
+    <header class="account-header">
+      <div class="header-left">
+        <h1>Account Summary</h1>
+        <div class="as-of-date" id="currentDateTime">Loading...</div>
+      </div>
+      <div class="header-right">
+        <span id="userDisplay"></span>
+        <button onclick="logout()">Logout</button>
+      </div>
+    </header>
+    <hr class="header-divider" />
+    <main>
+      <section id="home">
+        <div class="account-summary-content">
+          <div class="loans-container">
+            <div class="loans-header">
+              <h2>Your Loans</h2>
+              <button id="addLoanBtn" class="add-loan-btn">+ Add Loan</button>
+            </div>
+
+            <!-- Loan Input Form (hidden by default) -->
+            <div id="loanForm" class="loan-form" style="display: none">
+              <h3>Add New Loan</h3>
+              <form id="newLoanForm">
+                <div class="form-group">
+                  <label for="loanName">Loan Name</label>
+                  <input
+                    type="text"
+                    id="loanName"
+                    required
+                    placeholder="e.g., Car Loan"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="currentBalance">Current Balance ($)</label>
+                  <input
+                    type="number"
+                    id="currentBalance"
+                    required
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="interestRate">Interest Rate (%)</label>
+                  <input
+                    type="number"
+                    id="interestRate"
+                    required
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+                <div class="form-buttons">
+                  <button type="submit">Add Loan</button>
+                  <button type="button" onclick="toggleLoanForm()">
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Loans List -->
+            <div id="loansList" class="loans-list">
+              <!-- Loans will be added here dynamically -->
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>&copy; 2024 My Website. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+      const API_URL = "http://localhost:3000/api";
+      let currentUserId = null;
+
+      // Check if user is logged in
+      if (!sessionStorage.getItem("isLoggedIn")) {
+        window.location.href = "login.html";
+      } else {
+        currentUserId = sessionStorage.getItem("userId");
+        loadLoans();
+      }
+
+      // Display username
+      document.getElementById("userDisplay").textContent =
+        "Welcome, " + sessionStorage.getItem("username");
+
+      // Logout function
+      function logout() {
+        sessionStorage.clear();
+        window.location.href = "login.html";
+      }
+
+      // Toggle loan form visibility
+      function toggleLoanForm() {
+        const form = document.getElementById("loanForm");
+        form.style.display = form.style.display === "none" ? "block" : "none";
+      }
+
+      // Load saved loans when page loads
+      async function loadLoans() {
+        try {
+          const response = await fetch(`${API_URL}/loans/${currentUserId}`);
+          const loans = await response.json();
+
+          const loansList = document.getElementById("loansList");
+          loansList.innerHTML = ""; // Clear existing loans
+
+          loans.forEach((loan) => {
+            const loanElement = document.createElement("div");
+            loanElement.className = "loan-item";
+            loanElement.innerHTML = `
+              <h3>${loan.name}</h3>
+              <p>Current Balance: $${loan.balance.toFixed(2)}</p>
+              <p>Interest Rate: ${loan.interestRate.toFixed(2)}%</p>
+              <button onclick="deleteLoan('${
+                loan._id
+              }')" class="delete-btn">Delete</button>
+            `;
+            loansList.appendChild(loanElement);
+          });
+        } catch (error) {
+          console.error("Error loading loans:", error);
+          alert("Error loading loans. Please try again.");
+        }
+      }
+
+      // Delete a loan
+      async function deleteLoan(loanId) {
+        try {
+          await fetch(`${API_URL}/loans/${currentUserId}/${loanId}`, {
+            method: "DELETE",
+          });
+          loadLoans(); // Refresh the display
+        } catch (error) {
+          console.error("Error deleting loan:", error);
+          alert("Error deleting loan. Please try again.");
+        }
+      }
+
+      // Add event listener to the Add Loan button
+      document
+        .getElementById("addLoanBtn")
+        .addEventListener("click", toggleLoanForm);
+
+      // Handle new loan submission
+      document
+        .getElementById("newLoanForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const loanName = document.getElementById("loanName").value;
+          const currentBalance = parseFloat(
+            document.getElementById("currentBalance").value
+          );
+          const interestRate = parseFloat(
+            document.getElementById("interestRate").value
+          );
+
+          // Create new loan object
+          const newLoan = {
+            name: loanName,
+            balance: currentBalance,
+            interestRate: interestRate,
+          };
+
+          try {
+            await fetch(`${API_URL}/loans/${currentUserId}`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(newLoan),
+            });
+
+            // Reset and hide form
+            this.reset();
+            toggleLoanForm();
+
+            // Refresh the loans display
+            loadLoans();
+          } catch (error) {
+            console.error("Error adding loan:", error);
+            alert("Error adding loan. Please try again.");
+          }
+        });
+    </script>
+  </body>
+</html>

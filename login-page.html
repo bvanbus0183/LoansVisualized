@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - Loans Visualized</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="site-title-bar">
+      <span class="site-title">Loans Visualized</span>
+      <span class="title-separator">|</span>
+      <span class="site-subtitle">Repository of your Loans</span>
+    </div>
+    <header class="account-header">
+      <div class="header-left">
+        <h1>Login</h1>
+      </div>
+    </header>
+    <hr class="header-divider" />
+    <main>
+      <section id="login">
+        <div class="login-container">
+          <form id="loginForm" class="login-form">
+            <div class="form-group">
+              <label for="username">Username</label>
+              <input type="text" id="username" name="username" required />
+            </div>
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input type="password" id="password" name="password" required />
+            </div>
+            <div class="form-group">
+              <button type="submit" class="login-button">Sign In</button>
+            </div>
+            <div class="form-footer">
+              <a href="#" class="forgot-password">Forgot Password?</a>
+              <p class="signup-prompt">
+                Don't have an account?
+                <a href="#" class="signup-link">Sign up</a>
+              </p>
+            </div>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>&copy; 2024 Loans Visualized. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
